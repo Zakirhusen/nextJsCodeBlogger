@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-const Blog = () => {
-  const [blogs, setBlogs] = useState([]);
-  useEffect(() => {
-    //   console.log("use effect is running");
-    fetch("http://localhost:3000/api/blogs")
-      .then((res) => {
-        console.log(res.status);
-        let allBlogs = res.json();
-        return allBlogs;
-      })
-      .then((res) => {
-        setBlogs(res);
-      });
-  }, []);
+const Blog = (props) => {
+    console.log("props are in blog",props )
+  const [blogs, setBlogs] = useState(props.allblogs);
+  // useEffect(() => {
+  //   //   console.log("use effect is running");
+  //   fetch("http://localhost:3000/api/blogs")
+  //     .then((res) => {
+  //       // console.log(res.status);
+  //       let allBlogs = res.json();
+  //       return allBlogs;
+  //     })
+  //     .then((res) => {
+  //       setBlogs(res);
+  //     });
+  // }, []);
   return (
     <div className="blogs w-1/2 borderborder-black mx-auto my-6">
       <h1 className="text-3xl font-bold my-6 capitalize">latest blogs</h1>
@@ -36,3 +37,17 @@ const Blog = () => {
 };
 
 export default Blog;
+
+ const getServerSideProps=async(context)=>{
+     let data= await fetch("http://localhost:3000/api/blogs");
+      let allblogs= await data.json()
+
+     console.log(allblogs)
+    //  console.log(allblogs)
+     return{
+         props:{
+             allblogs
+         }
+     }
+}
+export  {getServerSideProps};

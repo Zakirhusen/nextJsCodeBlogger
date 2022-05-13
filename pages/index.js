@@ -1,27 +1,38 @@
 import Head from "next/head";
-import Link from 'next/link';
+import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import * as fs from "fs";
 
-const Home = () => {
-  const [blogs, setBlogs] = useState([]);
-  useEffect(() => {
-    console.log("use effect is running");
-    fetch("http://localhost:3000/api/blogs")
-      .then((res) => {
-        // console.log(res.status);
-        let allBlogs = res.json();
-        // console.log(allBlogs);
-        // // console.log('this',typeof(res));
-        return allBlogs;
-      })
-      .then((res) => {
-        // console.log(typeof(res));
-        setBlogs(res);
-      });
-  }, []);
-  // console.log("Allblogs", blogs);
-  // console.log("component is runnig");
+const Home = (props) => {
+  console.log("props are",props)
+  // console.log("props data is",props.data)
+
+  // this props come from SSR
+  const [blogs, setBlogs] = useState(props.data);
+
+  // console.log("blogs",blogs);
+
+  // this called CLIENT SIDE RENDERING data populated throgh javascript in browser and it not suit for SEO
+  // const [blogs, setBlogs] = useState();
+
+  // useEffect(() => {
+  //   console.log("use effect is running");
+  //   fetch("http://localhost:3000/api/blogs")
+  //     .then((res) => {
+  //       // console.log(res.status);
+  //       let allBlogs = res.json();
+  //       // console.log(allBlogs);
+  //       // // console.log('this',typeof(res));
+  //       return allBlogs;
+  //     })
+  //     .then((res) => {
+  //       // console.log(typeof(res));
+  //       setBlogs(res);
+  //     });
+  // }, []);
+  // // console.log("Allblogs", blogs);
+  // // console.log("component is runnig");
 
   return (
     <div className="">
@@ -44,28 +55,59 @@ const Home = () => {
         </h1>
         <h1 className="text-3xl font-bold my-6 capitalize">latest blogs</h1>
         <div className="blogs space-y-5 mx-auto">
-          {blogs.map((item) => {
-            let { title, content ,slug} = item;
-            return (
-              <div className="blogitem" key={slug}>
-              <Link href={`/${slug}`}>
-            <h2 className="font-semibold cursor-pointer text-xl capitalize">
-              {title}
-            </h2>
-              </Link>
-            <p>
-              {content.slice(
-                0,
-                120
-              )}{" "}
-              ...
-            </p>
-        </div>
-            )
-          })}
+          {blogs &&
+            blogs.map((item) => {
+              let { title, content, slug } = item;
+              return (
+                <div className="blogitem" key={slug}>
+                  <Link href={`/${slug}`}>
+                    <h2 className="font-semibold cursor-pointer text-xl capitalize">
+                      {title}
+                    </h2>
+                  </Link>
+                  <p>{content.slice(0, 120)} ...</p>
+                </div>
+              );
+            })}
         </div>
       </div>
     </div>
   );
+
+  // Data fetching using Server Side Rendering(SSR)
+  // export async function getServerSideProps(context) {
+  //   const res = await fetch("http://localhost:3000/api/blogs")
+  //   const data = await res.json()
+  //   // console.log("this is ssr req",context.params)
+  //   // if (!data) {
+  //   //   return {
+  //   //     redirect:{destination:'/blog',
+  //   //     permanent:false},
+  //   //     // notFound: true,
+  //   //   }
+  //   // }
+
+  //   return {
+  //    props: { data }, // will be passed to the page component as props
+  //   }
+  // }
 };
+
+  // Data fetching using Static Generation
+  export async function getStaticProps(context) {
+    
+    //due calling above api route we can call server two times which is effects on performance instead of using of above api
+
+    let blogs = await fs.promises.readdir("blogdata");
+    let files = blogs;
+    let data = [];
+    for (let element of files) {
+      let d = await fs.promises.readFile(`blogdata/${element}`, "utf-8");
+      data.push(JSON.parse(d));
+    }
+    // console.log(data);
+    return {
+      props: { data }, // will be passed to the page component as props
+    };
+  }
 export default Home;

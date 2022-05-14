@@ -1,11 +1,11 @@
 import Head from "next/head";
 import Link from "next/link";
-import Image from "next/image";
+// import Image from "next/image";
 import { useEffect, useState } from "react";
 import * as fs from "fs";
 
 const Home = (props) => {
-  console.log("props are",props)
+  // console.log("props are",props)
   // console.log("props data is",props.data)
 
   // this props come from SSR
@@ -42,11 +42,18 @@ const Home = (props) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex justify-center">
-        <Image
+      {/* we cannot use next Image in Static Site gen */}
+        {/* <Image
           src="/coder.avif"
           className="rounded "
           height={250}
           width="400"
+        /> */}
+        <img
+          src="/coder.avif"
+          className="rounded "
+          height={250}
+          width="400" alt="loading"
         />
       </div>
       <div className="blogs w-1/2 borderborder-black mx-auto my-6">
@@ -60,11 +67,11 @@ const Home = (props) => {
               let { title, content, slug } = item;
               return (
                 <div className="blogitem" key={slug}>
-                  <Link href={`/${slug}`}>
+                  <a href={`/${slug}`}>
                     <h2 className="font-semibold cursor-pointer text-xl capitalize">
                       {title}
                     </h2>
-                  </Link>
+                  </a>
                   <p>{content.slice(0, 120)} ...</p>
                 </div>
               );

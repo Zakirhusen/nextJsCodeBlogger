@@ -3,13 +3,18 @@ import Link from "next/link";
 // import Image from "next/image";
 import { useEffect, useState } from "react";
 import * as fs from "fs";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const Home = (props) => {
   // console.log("props are",props)
   // console.log("props data is",props.data)
 
   // this props come from SSR
-  const [blogs, setBlogs] = useState(props.data);
+  // const [blogs, setBlogs] = useState(props.data);
+
+  // below for  infinite scroll
+  const [hasmore, setHasmore] = useState(true)
+  const [blogs, setBlogs] = useState(props.data.slice(0,5));
 
   // console.log("blogs",blogs);
 
@@ -34,6 +39,19 @@ const Home = (props) => {
   // // console.log("Allblogs", blogs);
   // // console.log("component is runnig");
 
+
+  // for infinite scroll
+  const fetchMoreData = () => {
+      blogs.length===props.data.length?setHasmore(false):setHasmore(true)
+      console.log('fetchmore is calling');
+    // a fake async api call like which sends
+    // 20 more records in 1.5 secs
+    setTimeout(() => {
+       setBlogs([...blogs,...(props.data).slice(blogs.length,blogs.length+5)])
+      // console.log(blogs);
+    }, 1000);
+  };
+
   return (
     <div className="">
       <Head>
@@ -51,32 +69,41 @@ const Home = (props) => {
         /> */}
         <img
           src="/coder.avif"
-          className="rounded "
-          height={250}
-          width="400" alt="loading"
+          className="rounded-full h-[300px] inline"
+          width={300} alt="loading"
         />
       </div>
       <div className="blogs w-1/2 borderborder-black mx-auto my-6">
-        <h1 className="text-lg font-semibold capitalize text-center my-4 ">
+        <h1 className="text-2xl font-semibold capitalize text-center my-14 ">
           a blog for coder who can hunt for code
         </h1>
         <h1 className="text-3xl font-bold my-6 capitalize">latest blogs</h1>
+        <InfiniteScroll
+          dataLength={blogs.length}
+          next={fetchMoreData}
+          hasMore={hasmore}
+          loader={<h4 className="font-bold my-9 text-2xl">
+            <img src="loader.gif" className="mx-auto" alt="loading"  width={40}/>
+          </h4>}
+        >
         <div className="blogs space-y-5 mx-auto">
           {blogs &&
-            blogs.map((item) => {
+            blogs.map((item,index) => {
               let { title, content, slug } = item;
               return (
-                <div className="blogitem" key={slug}>
+                <div className="blogitem" key={`${slug+index}`}>
                   <a href={`/${slug}`}>
                     <h2 className="font-semibold cursor-pointer text-xl capitalize">
                       {title}
                     </h2>
                   </a>
-                  <p>{content.slice(0, 120)} ...</p>
+                  <p>{content.slice(0,120)} ...</p>
                 </div>
               );
             })}
         </div>
+            </InfiniteScroll>
+
       </div>
     </div>
   );
@@ -105,16 +132,18 @@ const Home = (props) => {
     
     //due calling above api route we can call server two times which is effects on performance instead of using of above api
 
-    let blogs = await fs.promises.readdir("blogdata");
-    let files = blogs;
+    let files = await fs.promises.readdir("blogdata");
+    
     let data = [];
     for (let element of files) {
       let d = await fs.promises.readFile(`blogdata/${element}`, "utf-8");
       data.push(JSON.parse(d));
     }
     // console.log(data);
+    // console.log("files are shown like this",files);
     return {
       props: { data }, // will be passed to the page component as props
     };
   }
 export default Home;
+

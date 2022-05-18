@@ -6,8 +6,8 @@ export default async function handler(req, res) {
   // console.log(req.query);
   // console.log("url is ",req.url);
 
-  let blogs = await fs.promises.readdir("blogdata");
-  let files = blogs;
+  let files = await fs.promises.readdir("blogdata");
+  
   let allBlogs = [];
   for (let element of files) {
     let d = await fs.promises.readFile(`blogdata/${element}`, "utf-8");
@@ -15,5 +15,6 @@ export default async function handler(req, res) {
     // console.log(allBlogs);
   }
   // console.log(allBlogs);
+  console.log("file names as",files);
    res.status(200).json(allBlogs);
 }
